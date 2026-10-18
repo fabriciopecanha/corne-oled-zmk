@@ -11,6 +11,6 @@ manifest:
       import: app/west.yml
     - name: zmk-nice-oled
       remote: fabriciopecanha
-      revision: 210b2e99d04d5271d1da48e3ebcb43cfd13c9f0d
+      revision: 51daf40edbab5f96601098e31c912976e45426c2
   self:
     path: config
