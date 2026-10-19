@@ -24,8 +24,13 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/keycode_state_changed.h>
 #include <zmk/hid.h>
 #include <dt-bindings/zmk/modifiers.h>
+#include <zmk/keys.h>
 #include <zmk/ble.h>
 #include <zmk/keymap.h>
+
+#ifndef HID_USAGE_KEY_KEYBOARD_LEFTCONTROL
+#define HID_USAGE_KEY_KEYBOARD_LEFTCONTROL 0xE0
+#endif
 
 #ifndef MOD_LCTL
 #define MOD_LCTL 0x01
@@ -439,6 +444,12 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 // -----------------------------------------------------------------------------
 // Modifier Status Listener (Central only)
 // -----------------------------------------------------------------------------
+static inline bool is_modifier_key(uint8_t usage_page, uint32_t keycode) {
+    return (keycode >= HID_USAGE_KEY_KEYBOARD_LEFTCONTROL &&
+            keycode <= (HID_USAGE_KEY_KEYBOARD_LEFTCONTROL + 7) &&
+            usage_page == 0x07);
+}
+
 static void set_mods_status(struct zmk_widget_screen_status *widget,
                             struct mods_status_state state) {
     if (widget->state.modifiers == state.mods) {
@@ -449,23 +460,46 @@ static void set_mods_status(struct zmk_widget_screen_status *widget,
 }
 
 static void mods_status_update_cb(struct mods_status_state state) {
+    uint8_t live_mods = (uint8_t)zmk_hid_get_explicit_mods();
+    if (live_mods == 0) {
+        state.mods = 0;
+    }
     struct zmk_widget_screen_status *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         set_mods_status(widget, state);
     }
 }
 
-static struct mods_status_state mods_status_get_state(const zmk_event_t *_eh) {
-    return (struct mods_status_state){
-        .mods = (uint8_t)zmk_hid_get_explicit_mods(),
-    };
+static struct mods_status_state mods_status_get_state(const zmk_event_t *eh) {
+    uint8_t mods = (uint8_t)zmk_hid_get_explicit_mods();
+
+    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
+    if (ev != NULL) {
+        uint8_t mod_bit = ev->explicit_modifiers;
+        if (is_modifier_key(ev->usage_page, ev->keycode)) {
+            mod_bit |= (1 << (ev->keycode - HID_USAGE_KEY_KEYBOARD_LEFTCONTROL));
+        }
+        if (ev->state) {
+            mods |= mod_bit;
+        } else {
+            mods &= ~mod_bit;
+        }
+        return (struct mods_status_state){ .mods = mods };
+    }
+
+    const struct zmk_modifiers_state_changed *m_ev = as_zmk_modifiers_state_changed(eh);
+    if (m_ev != NULL) {
+        return (struct mods_status_state){ .mods = (uint8_t)m_ev->modifiers };
+    }
+
+    return (struct mods_status_state){ .mods = mods };
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_mods_status, struct mods_status_state,
                             mods_status_update_cb, mods_status_get_state);
 
-ZMK_SUBSCRIPTION(widget_mods_status, zmk_modifiers_state_changed);
 ZMK_SUBSCRIPTION(widget_mods_status, zmk_keycode_state_changed);
+ZMK_SUBSCRIPTION(widget_mods_status, zmk_modifiers_state_changed);
 
 #else // Peripheral split role
 static void set_peripheral_status(struct zmk_widget_screen_status *widget,
