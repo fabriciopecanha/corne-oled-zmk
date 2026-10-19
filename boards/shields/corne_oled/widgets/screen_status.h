@@ -7,11 +7,19 @@
 
 #include <lvgl.h>
 #include <zephyr/kernel.h>
+#include <zmk/endpoints.h>
 #include "mono_draw.h"
 
 struct screen_status_state {
     uint8_t battery;
     bool charging;
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+    struct zmk_endpoint_instance selected_endpoint;
+    bool active_profile_connected;
+    bool active_profile_bonded;
+#else
+    bool connected;
+#endif
 };
 
 struct zmk_widget_screen_status {
