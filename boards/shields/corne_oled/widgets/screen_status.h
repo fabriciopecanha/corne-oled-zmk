@@ -17,6 +17,8 @@ struct screen_status_state {
     struct zmk_endpoint_instance selected_endpoint;
     bool active_profile_connected;
     bool active_profile_bonded;
+    uint8_t layer_index;
+    const char *layer_label;
 #else
     bool connected;
 #endif

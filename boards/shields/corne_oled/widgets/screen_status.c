@@ -5,6 +5,7 @@
 
 #include "screen_status.h"
 #include <stdio.h>
+#include <string.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -18,7 +19,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/endpoint_changed.h>
+#include <zmk/events/layer_state_changed.h>
 #include <zmk/ble.h>
+#include <zmk/keymap.h>
 #else
 #include <zmk/events/split_peripheral_status_changed.h>
 #include <zmk/split/bluetooth/peripheral.h>
@@ -36,6 +39,11 @@ struct output_status_state {
     struct zmk_endpoint_instance selected_endpoint;
     bool active_profile_connected;
     bool active_profile_bonded;
+};
+
+struct layer_status_state {
+    zmk_keymap_layer_index_t index;
+    const char *label;
 };
 #else
 struct peripheral_status_state {
@@ -84,18 +92,41 @@ static void draw_screen(struct zmk_widget_screen_status *widget) {
         break;
     }
     }
+
+    // Big Layer Digit (Y=36..58, X=9..22, centered in 32px)
+    mono_draw_big_digit(cbuf, 9, 36, widget->state.layer_index, COLOR_WHITE);
+
+    // Layer Name string (Y=68..74, centered)
+    const char *name = widget->state.layer_label;
+    char layer_name_buf[8] = {};
+    if (!name || strlen(name) == 0) {
+        snprintf(layer_name_buf, sizeof(layer_name_buf), "L%u", widget->state.layer_index);
+        name = layer_name_buf;
+    }
+    int text_len = strlen(name);
+    if (text_len > 6) text_len = 6;
+    int text_w = text_len * 5 - 1;
+    int text_x = (CORNE_LOGICAL_WIDTH - text_w) / 2;
+    if (text_x < 1) text_x = 1;
+    mono_draw_string(cbuf, text_x, 68, name, COLOR_WHITE);
+
 #else
     // Peripheral screen
     mono_draw_string(cbuf, 2, 14, "SPLIT", COLOR_WHITE);
     mono_draw_string(cbuf, 26, 14, "R", COLOR_WHITE);
 
+    // Vertical CORNE badge
+    mono_draw_rect(cbuf, 5, 34, 22, 45, COLOR_WHITE);
+    mono_draw_char(cbuf, 9, 40, 'C', COLOR_WHITE);
+    mono_draw_char(cbuf, 9, 48, 'O', COLOR_WHITE);
+    mono_draw_char(cbuf, 9, 56, 'R', COLOR_WHITE);
+    mono_draw_char(cbuf, 9, 64, 'N', COLOR_WHITE);
+    mono_draw_char(cbuf, 9, 72, 'E', COLOR_WHITE);
+
     // Footer on peripheral
     mono_draw_string(cbuf, 6, 96, "SYNC", COLOR_WHITE);
     mono_draw_string(cbuf, 11, 108, widget->state.connected ? "OK" : "--", COLOR_WHITE);
 #endif
-
-    // Baseline text
-    mono_draw_string(cbuf, 3, 50, "CORNE", COLOR_WHITE);
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
@@ -175,6 +206,36 @@ ZMK_SUBSCRIPTION(widget_output_status, zmk_endpoint_changed);
 ZMK_SUBSCRIPTION(widget_output_status, zmk_ble_active_profile_changed);
 #endif
 
+// -----------------------------------------------------------------------------
+// Layer Status Listener (Central only)
+// -----------------------------------------------------------------------------
+static void set_layer_status(struct zmk_widget_screen_status *widget,
+                             struct layer_status_state state) {
+    widget->state.layer_index = state.index;
+    widget->state.layer_label = state.label;
+    draw_screen(widget);
+}
+
+static void layer_status_update_cb(struct layer_status_state state) {
+    struct zmk_widget_screen_status *widget;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        set_layer_status(widget, state);
+    }
+}
+
+static struct layer_status_state layer_status_get_state(const zmk_event_t *eh) {
+    zmk_keymap_layer_index_t index = zmk_keymap_highest_layer_active();
+    return (struct layer_status_state){
+        .index = index,
+        .label = zmk_keymap_layer_name(zmk_keymap_layer_index_to_id(index))
+    };
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_status, struct layer_status_state,
+                            layer_status_update_cb, layer_status_get_state);
+
+ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
+
 #else // Peripheral split role
 static void set_peripheral_status(struct zmk_widget_screen_status *widget,
                                   struct peripheral_status_state state) {
@@ -217,6 +278,7 @@ int zmk_widget_screen_status_init(struct zmk_widget_screen_status *widget, lv_ob
     widget_battery_status_init();
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     widget_output_status_init();
+    widget_layer_status_init();
 #else
     widget_peripheral_status_init();
 #endif
