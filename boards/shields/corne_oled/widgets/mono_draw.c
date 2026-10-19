@@ -172,6 +172,7 @@ void mono_draw_string(lv_color_t *cbuf, int x, int y, const char *str, lv_color_
     if (!str) return;
     int cur_x = x;
     while (*str) {
+        if (cur_x + 4 > CORNE_LOGICAL_WIDTH) break;
         mono_draw_char(cbuf, cur_x, y, *str, color);
         cur_x += 5; // 4px glyph + 1px spacing
         str++;
