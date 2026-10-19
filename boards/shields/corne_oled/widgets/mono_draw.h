@@ -17,8 +17,15 @@
 
 #define CORNE_CANVAS_PIXELS  (CORNE_CANVAS_WIDTH * CORNE_CANVAS_HEIGHT)
 
-#define COLOR_BLACK ((lv_color_t){.full = 0})
-#define COLOR_WHITE ((lv_color_t){.full = 1})
+/*
+ * Polarity configuration:
+ * The SSD1306 display is initialized with 'inversion-on;' in Devicetree,
+ * which sets REVERSE_DISPLAY (0xA7). In this mode:
+ * - A bit value of 1 turns the physical pixel OFF (pure black OLED background).
+ * - A bit value of 0 turns the physical pixel ON (crisp white text/lines).
+ */
+#define COLOR_BLACK ((lv_color_t){.full = 1})
+#define COLOR_WHITE ((lv_color_t){.full = 0})
 
 void mono_clear(lv_color_t *cbuf, lv_color_t color);
 void mono_draw_pixel(lv_color_t *cbuf, int x, int y, lv_color_t color);
@@ -30,3 +37,4 @@ void mono_draw_char(lv_color_t *cbuf, int x, int y, char ch, lv_color_t color);
 void mono_draw_string(lv_color_t *cbuf, int x, int y, const char *str, lv_color_t color);
 void mono_draw_big_digit(lv_color_t *cbuf, int x, int y, int digit, lv_color_t color);
 void mono_draw_battery(lv_color_t *cbuf, int x, int y, uint8_t level, bool charging);
+void mono_draw_bold_corne(lv_color_t *cbuf, int x, int y_start, lv_color_t color);

@@ -225,3 +225,43 @@ void mono_draw_battery(lv_color_t *cbuf, int x, int y, uint8_t level, bool charg
         mono_fill_rect(cbuf, x + 1, y + 1, fill_w, 4, COLOR_WHITE);
     }
 }
+
+void mono_draw_bold_corne(lv_color_t *cbuf, int x, int y_start, lv_color_t color) {
+    // Letter C (x .. x+8, y .. y+9)
+    int y = y_start;
+    mono_fill_rect(cbuf, x, y, 9, 2, color);       // Top bar
+    mono_fill_rect(cbuf, x, y, 2, 10, color);      // Left bar
+    mono_fill_rect(cbuf, x, y + 8, 9, 2, color);   // Bottom bar
+
+    // Letter O (y_start + 12)
+    y = y_start + 12;
+    mono_fill_rect(cbuf, x, y, 9, 2, color);       // Top bar
+    mono_fill_rect(cbuf, x, y + 8, 9, 2, color);   // Bottom bar
+    mono_fill_rect(cbuf, x, y, 2, 10, color);      // Left bar
+    mono_fill_rect(cbuf, x + 7, y, 2, 10, color);  // Right bar
+
+    // Letter R (y_start + 24)
+    y = y_start + 24;
+    mono_fill_rect(cbuf, x, y, 2, 10, color);      // Left bar
+    mono_fill_rect(cbuf, x, y, 9, 2, color);       // Top bar
+    mono_fill_rect(cbuf, x + 7, y, 2, 6, color);   // Right bar (top)
+    mono_fill_rect(cbuf, x, y + 4, 9, 2, color);   // Mid bar
+    mono_fill_rect(cbuf, x + 5, y + 6, 2, 2, color); // Diagonal leg 1
+    mono_fill_rect(cbuf, x + 7, y + 8, 2, 2, color); // Diagonal leg 2
+
+    // Letter N (y_start + 36)
+    y = y_start + 36;
+    mono_fill_rect(cbuf, x, y, 2, 10, color);      // Left bar
+    mono_fill_rect(cbuf, x + 7, y, 2, 10, color);  // Right bar
+    mono_fill_rect(cbuf, x + 2, y + 2, 2, 2, color); // Diagonal step 1
+    mono_fill_rect(cbuf, x + 3, y + 4, 2, 2, color); // Diagonal step 2
+    mono_fill_rect(cbuf, x + 4, y + 5, 2, 2, color); // Diagonal step 3
+    mono_fill_rect(cbuf, x + 5, y + 7, 2, 2, color); // Diagonal step 4
+
+    // Letter E (y_start + 48)
+    y = y_start + 48;
+    mono_fill_rect(cbuf, x, y, 2, 10, color);      // Left bar
+    mono_fill_rect(cbuf, x, y, 9, 2, color);       // Top bar
+    mono_fill_rect(cbuf, x, y + 4, 7, 2, color);   // Mid bar
+    mono_fill_rect(cbuf, x, y + 8, 9, 2, color);   // Bottom bar
+}

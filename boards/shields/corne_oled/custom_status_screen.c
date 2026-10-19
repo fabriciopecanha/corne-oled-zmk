@@ -11,6 +11,7 @@ static struct zmk_widget_screen_status status_widget;
 
 lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen = lv_obj_create(NULL);
+    lv_obj_remove_style_all(screen);
     zmk_widget_screen_status_init(&status_widget, screen);
     lv_obj_align(zmk_widget_screen_status_obj(&status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
     return screen;

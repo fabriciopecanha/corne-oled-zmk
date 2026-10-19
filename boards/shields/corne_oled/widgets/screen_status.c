@@ -52,19 +52,20 @@ struct peripheral_status_state {
 #endif
 
 // -----------------------------------------------------------------------------
-// Regional Rendering & True Partial Updates
 // -----------------------------------------------------------------------------
-// Header Region (Logical Y: 0..24 -> Canvas X: 103..127)
+// Regional Rendering & True Partial Updates (Variant V2 Tech Brackets)
+// -----------------------------------------------------------------------------
+// Header Region (Logical Y: 0..23 -> Canvas X: 104..127, 24 cols)
 static void draw_header_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
-    mono_fill_rect(cbuf, 0, 0, 32, 25, COLOR_BLACK);
+    mono_fill_rect(cbuf, 0, 0, 32, 24, COLOR_BLACK);
 
     // Top Corners
     mono_draw_pixel(cbuf, 0, 0, COLOR_WHITE);
     mono_draw_pixel(cbuf, 31, 0, COLOR_WHITE);
 
-    // Header Divider (Y=24)
-    mono_draw_line_h(cbuf, 0, 31, 24, COLOR_WHITE);
+    // Header Divider (Y=23)
+    mono_draw_line_h(cbuf, 0, 31, 23, COLOR_WHITE);
 
     // Battery (Y=4..10)
     char batt_str[6] = {};
@@ -100,15 +101,15 @@ static void draw_header_region(struct zmk_widget_screen_status *widget) {
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
-        lv_area_t area = { .x1 = 103, .y1 = 0, .x2 = 127, .y2 = 31 };
+        lv_area_t area = { .x1 = 104, .y1 = 0, .x2 = 127, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
 }
 
-// Body Region (Logical Y: 25..87 -> Canvas X: 40..102)
+// Body Region (Logical Y: 24..89 -> Canvas X: 38..103, 66 cols)
 static void draw_body_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
-    mono_fill_rect(cbuf, 0, 25, 32, 63, COLOR_BLACK);
+    mono_fill_rect(cbuf, 0, 24, 32, 66, COLOR_BLACK);
 
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     // Big Layer Digit (Y=36..58, centered)
@@ -129,29 +130,35 @@ static void draw_body_region(struct zmk_widget_screen_status *widget) {
     if (text_x < 1) text_x = 1;
     mono_draw_string(cbuf, text_x, 68, safe_name, COLOR_WHITE);
 #else
-    // Peripheral: Vertical CORNE box (Y=34..79)
-    mono_draw_rect(cbuf, 5, 34, 22, 45, COLOR_WHITE);
-    mono_draw_char(cbuf, 14, 40, 'C', COLOR_WHITE);
-    mono_draw_char(cbuf, 14, 48, 'O', COLOR_WHITE);
-    mono_draw_char(cbuf, 14, 56, 'R', COLOR_WHITE);
-    mono_draw_char(cbuf, 14, 64, 'N', COLOR_WHITE);
-    mono_draw_char(cbuf, 14, 72, 'E', COLOR_WHITE);
+    // Peripheral: Tech brackets + Bold CORNE (Variant V2)
+    // Left bracket (X=4, Y=26..87)
+    mono_draw_line_v(cbuf, 4, 26, 87, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 4, 8, 26, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 4, 8, 87, COLOR_WHITE);
+
+    // Right bracket (X=27, Y=26..87)
+    mono_draw_line_v(cbuf, 27, 26, 87, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 23, 27, 26, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 23, 27, 87, COLOR_WHITE);
+
+    // Bold CORNE (centered at X=11, starting at Y=28)
+    mono_draw_bold_corne(cbuf, 11, 28, COLOR_WHITE);
 #endif
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
-        lv_area_t area = { .x1 = 40, .y1 = 0, .x2 = 102, .y2 = 31 };
+        lv_area_t area = { .x1 = 38, .y1 = 0, .x2 = 103, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
 }
 
-// Footer Region (Logical Y: 88..127 -> Canvas X: 0..39)
+// Footer Region (Logical Y: 90..127 -> Canvas X: 0..37, 38 cols)
 static void draw_footer_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
-    mono_fill_rect(cbuf, 0, 88, 32, 40, COLOR_BLACK);
+    mono_fill_rect(cbuf, 0, 90, 32, 38, COLOR_BLACK);
 
-    // Footer Divider (Y=88)
-    mono_draw_line_h(cbuf, 0, 31, 88, COLOR_WHITE);
+    // Footer Divider (Y=90)
+    mono_draw_line_h(cbuf, 0, 31, 90, COLOR_WHITE);
 
     // Bottom Corners
     mono_draw_pixel(cbuf, 0, 127, COLOR_WHITE);
@@ -160,14 +167,14 @@ static void draw_footer_region(struct zmk_widget_screen_status *widget) {
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     // Central footer: reserved for future modifier indicator blocks
 #else
-    // Peripheral footer: SPLIT (Y=96) + OK/-- (Y=108)
+    // Peripheral footer: SPLIT (Y=96) + OK/-- (Y=109)
     mono_draw_string(cbuf, 4, 96, "SPLIT", COLOR_WHITE);
-    mono_draw_string(cbuf, 11, 108, widget->state.connected ? "OK" : "--", COLOR_WHITE);
+    mono_draw_string(cbuf, 11, 109, widget->state.connected ? "OK" : "--", COLOR_WHITE);
 #endif
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
-        lv_area_t area = { .x1 = 0, .y1 = 0, .x2 = 39, .y2 = 31 };
+        lv_area_t area = { .x1 = 0, .y1 = 0, .x2 = 37, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
 }
@@ -326,10 +333,14 @@ ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 // Initialization
 // -----------------------------------------------------------------------------
 int zmk_widget_screen_status_init(struct zmk_widget_screen_status *widget, lv_obj_t *parent) {
+    mono_clear(widget->cbuf, COLOR_BLACK);
+
     widget->obj = lv_obj_create(parent);
+    lv_obj_remove_style_all(widget->obj);
     lv_obj_set_size(widget->obj, CORNE_CANVAS_WIDTH, CORNE_CANVAS_HEIGHT);
 
     lv_obj_t *canvas = lv_canvas_create(widget->obj);
+    lv_obj_remove_style_all(canvas);
     lv_obj_align(canvas, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_canvas_set_buffer(canvas, widget->cbuf, CORNE_CANVAS_WIDTH, CORNE_CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
 
