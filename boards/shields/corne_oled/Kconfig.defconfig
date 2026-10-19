@@ -3,6 +3,9 @@
 
 if SHIELD_CORNE_OLED
 
+config LV_USE_CANVAS
+    default y
+
 choice ZMK_DISPLAY_STATUS_SCREEN
     default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
 endchoice

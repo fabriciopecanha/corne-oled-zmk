@@ -3,3 +3,4 @@
 
 config SHIELD_CORNE_OLED
     def_bool $(shields_list_contains,corne_oled)
+    select LV_USE_CANVAS
