@@ -20,8 +20,37 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/layer_state_changed.h>
+#include <zmk/events/modifiers_state_changed.h>
+#include <zmk/events/keycode_state_changed.h>
+#include <zmk/hid.h>
+#include <dt-bindings/zmk/modifiers.h>
 #include <zmk/ble.h>
 #include <zmk/keymap.h>
+
+#ifndef MOD_LCTL
+#define MOD_LCTL 0x01
+#endif
+#ifndef MOD_LSFT
+#define MOD_LSFT 0x02
+#endif
+#ifndef MOD_LALT
+#define MOD_LALT 0x04
+#endif
+#ifndef MOD_LGUI
+#define MOD_LGUI 0x08
+#endif
+#ifndef MOD_RCTL
+#define MOD_RCTL 0x10
+#endif
+#ifndef MOD_RSFT
+#define MOD_RSFT 0x20
+#endif
+#ifndef MOD_RALT
+#define MOD_RALT 0x40
+#endif
+#ifndef MOD_RGUI
+#define MOD_RGUI 0x80
+#endif
 #else
 #include <zmk/events/split_peripheral_status_changed.h>
 #include <zmk/split/bluetooth/peripheral.h>
@@ -45,6 +74,10 @@ struct layer_status_state {
     zmk_keymap_layer_index_t index;
     const char *label;
 };
+
+struct mods_status_state {
+    uint8_t mods;
+};
 #else
 struct peripheral_status_state {
     bool connected;
@@ -52,12 +85,60 @@ struct peripheral_status_state {
 #endif
 
 // -----------------------------------------------------------------------------
+// Regional Rendering & True Partial Updates (Variant V2 Tech Brackets + M1 Left)
 // -----------------------------------------------------------------------------
-// Regional Rendering & True Partial Updates (Variant V2 Tech Brackets)
-// -----------------------------------------------------------------------------
-// Header Region (Logical Y: 0..23 -> Canvas X: 104..127, 24 cols)
+// Header Region (Central: Y: 0..25 -> Canvas X: 102..127, 26 cols)
+//               (Peripheral: Y: 0..23 -> Canvas X: 104..127, 24 cols)
 static void draw_header_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+    mono_fill_rect(cbuf, 0, 0, 32, 26, COLOR_BLACK);
+
+    // Top Corners
+    mono_draw_pixel(cbuf, 0, 0, COLOR_WHITE);
+    mono_draw_pixel(cbuf, 31, 0, COLOR_WHITE);
+
+    // Header Divider (Y=25)
+    mono_draw_line_h(cbuf, 0, 31, 25, COLOR_WHITE);
+
+    // Large Battery (x=1, y=2)
+    mono_draw_battery_large(cbuf, 1, 2, widget->state.battery, widget->state.charging);
+    char batt_str[6] = {};
+    if (widget->state.battery >= 100) {
+        mono_draw_string(cbuf, 16, 3, "100", COLOR_WHITE);
+    } else {
+        snprintf(batt_str, sizeof(batt_str), "%u%%", widget->state.battery);
+        mono_draw_string(cbuf, 16, 3, batt_str, COLOR_WHITE);
+    }
+
+    // Connection: Bluetooth or USB (Y=14..20)
+    switch (widget->state.selected_endpoint.transport) {
+    case ZMK_TRANSPORT_USB:
+        mono_draw_string(cbuf, 2, 15, "USB", COLOR_WHITE);
+        mono_draw_string(cbuf, 20, 15, "OK", COLOR_WHITE);
+        break;
+    case ZMK_TRANSPORT_BLE: {
+        mono_draw_bt_icon(cbuf, 2, 14, COLOR_WHITE);
+        char bt_str[6] = {};
+        snprintf(bt_str, sizeof(bt_str), "B%d", widget->state.selected_endpoint.ble.profile_index + 1);
+        mono_draw_string(cbuf, 10, 15, bt_str, COLOR_WHITE);
+        if (widget->state.active_profile_connected) {
+            mono_draw_string(cbuf, 22, 15, "OK", COLOR_WHITE);
+        } else if (widget->state.active_profile_bonded) {
+            mono_draw_string(cbuf, 22, 15, "--", COLOR_WHITE);
+        } else {
+            mono_draw_string(cbuf, 22, 15, "?", COLOR_WHITE);
+        }
+        break;
+    }
+    }
+
+    lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
+    if (canvas) {
+        lv_area_t area = { .x1 = 102, .y1 = 0, .x2 = 127, .y2 = 31 };
+        lv_obj_invalidate_area(canvas, &area);
+    }
+#else
     mono_fill_rect(cbuf, 0, 0, 32, 24, COLOR_BLACK);
 
     // Top Corners
@@ -73,49 +154,40 @@ static void draw_header_region(struct zmk_widget_screen_status *widget) {
     mono_draw_string(cbuf, 2, 4, batt_str, COLOR_WHITE);
     mono_draw_battery(cbuf, 19, 4, widget->state.battery, widget->state.charging);
 
-    // Connection / Role (Y=14..20)
-#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    switch (widget->state.selected_endpoint.transport) {
-    case ZMK_TRANSPORT_USB:
-        mono_draw_string(cbuf, 2, 14, "USB", COLOR_WHITE);
-        mono_draw_string(cbuf, 20, 14, "OK", COLOR_WHITE);
-        break;
-    case ZMK_TRANSPORT_BLE: {
-        char bt_str[6] = {};
-        snprintf(bt_str, sizeof(bt_str), "BT%d", widget->state.selected_endpoint.ble.profile_index + 1);
-        mono_draw_string(cbuf, 2, 14, bt_str, COLOR_WHITE);
-        if (widget->state.active_profile_connected) {
-            mono_draw_string(cbuf, 20, 14, "OK", COLOR_WHITE);
-        } else if (widget->state.active_profile_bonded) {
-            mono_draw_string(cbuf, 20, 14, "--", COLOR_WHITE);
-        } else {
-            mono_draw_string(cbuf, 20, 14, "?", COLOR_WHITE);
-        }
-        break;
-    }
-    }
-#else
     // Peripheral: "RIGHT" centered with 4px margins (24px text width in 32px)
     mono_draw_string(cbuf, 4, 14, "RIGHT", COLOR_WHITE);
-#endif
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
         lv_area_t area = { .x1 = 104, .y1 = 0, .x2 = 127, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
+#endif
 }
 
-// Body Region (Logical Y: 24..89 -> Canvas X: 38..103, 66 cols)
+// Body Region (Central: Y: 26..88 -> Canvas X: 39..101, 63 cols)
+//             (Peripheral: Y: 24..89 -> Canvas X: 38..103, 66 cols)
 static void draw_body_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
-    mono_fill_rect(cbuf, 0, 24, 32, 66, COLOR_BLACK);
-
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    // Big Layer Digit (Y=36..58, centered)
-    mono_draw_big_digit(cbuf, 9, 36, widget->state.layer_index, COLOR_WHITE);
+    mono_fill_rect(cbuf, 0, 26, 32, 63, COLOR_BLACK);
 
-    // Layer Name string (Y=68..74, safely truncated to 6 characters max)
+    // Brackets (Y=28..87)
+    mono_draw_line_v(cbuf, 4, 28, 87, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 4, 8, 28, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 4, 8, 87, COLOR_WHITE);
+
+    mono_draw_line_v(cbuf, 27, 28, 87, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 23, 27, 28, COLOR_WHITE);
+    mono_draw_line_h(cbuf, 23, 27, 87, COLOR_WHITE);
+
+    // Hero Digit (Y=33..66)
+    mono_draw_hero_digit(cbuf, 6, 33, widget->state.layer_index, COLOR_WHITE);
+
+    // Divider (Y=71)
+    mono_draw_line_h(cbuf, 10, 21, 71, COLOR_WHITE);
+
+    // Layer Name string (Y=76, safely truncated to 6 characters max)
     const char *name = widget->state.layer_label;
     char safe_name[7] = {};
     if (!name || strlen(name) == 0) {
@@ -128,8 +200,16 @@ static void draw_body_region(struct zmk_widget_screen_status *widget) {
     int text_w = text_len * 5 - 1;
     int text_x = (CORNE_LOGICAL_WIDTH - text_w) / 2;
     if (text_x < 1) text_x = 1;
-    mono_draw_string(cbuf, text_x, 68, safe_name, COLOR_WHITE);
+    mono_draw_string(cbuf, text_x, 76, safe_name, COLOR_WHITE);
+
+    lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
+    if (canvas) {
+        lv_area_t area = { .x1 = 39, .y1 = 0, .x2 = 101, .y2 = 31 };
+        lv_obj_invalidate_area(canvas, &area);
+    }
 #else
+    mono_fill_rect(cbuf, 0, 24, 32, 66, COLOR_BLACK);
+
     // Peripheral: Tech brackets + Bold CORNE (Variant V2)
     // Left bracket (X=4, Y=26..87)
     mono_draw_line_v(cbuf, 4, 26, 87, COLOR_WHITE);
@@ -143,18 +223,77 @@ static void draw_body_region(struct zmk_widget_screen_status *widget) {
 
     // Bold CORNE (centered at X=11, starting at Y=28)
     mono_draw_bold_corne(cbuf, 11, 28, COLOR_WHITE);
-#endif
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
         lv_area_t area = { .x1 = 38, .y1 = 0, .x2 = 103, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
+#endif
 }
 
-// Footer Region (Logical Y: 90..127 -> Canvas X: 0..37, 38 cols)
+// Footer Region (Central: Y: 89..127 -> Canvas X: 0..38, 39 cols)
+//             (Peripheral: Y: 90..127 -> Canvas X: 0..37, 38 cols)
 static void draw_footer_region(struct zmk_widget_screen_status *widget) {
     lv_color_t *cbuf = widget->cbuf;
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+    mono_fill_rect(cbuf, 0, 89, 32, 39, COLOR_BLACK);
+
+    // Footer Divider (Y=89)
+    mono_draw_line_h(cbuf, 0, 31, 89, COLOR_WHITE);
+
+    // Bottom Corners
+    mono_draw_pixel(cbuf, 0, 127, COLOR_WHITE);
+    mono_draw_pixel(cbuf, 31, 127, COLOR_WHITE);
+
+    uint8_t mods = widget->state.modifiers;
+
+    // Box 1: Shift [⇧] (X=2..14, Y=92..106)
+    bool s_act = (mods & (MOD_LSFT | MOD_RSFT)) != 0;
+    if (s_act) {
+        mono_fill_rect(cbuf, 2, 92, 13, 15, COLOR_WHITE);
+        mono_draw_apple_shift(cbuf, 4, 95, COLOR_BLACK);
+    } else {
+        mono_draw_rect(cbuf, 2, 92, 13, 15, COLOR_WHITE);
+        mono_draw_apple_shift(cbuf, 4, 95, COLOR_WHITE);
+    }
+
+    // Box 2: Ctrl [⌃] (X=17..29, Y=92..106)
+    bool c_act = (mods & (MOD_LCTL | MOD_RCTL)) != 0;
+    if (c_act) {
+        mono_fill_rect(cbuf, 17, 92, 13, 15, COLOR_WHITE);
+        mono_draw_apple_ctrl(cbuf, 19, 97, COLOR_BLACK);
+    } else {
+        mono_draw_rect(cbuf, 17, 92, 13, 15, COLOR_WHITE);
+        mono_draw_apple_ctrl(cbuf, 19, 97, COLOR_WHITE);
+    }
+
+    // Box 3: Opt [⌥] (X=2..14, Y=109..123)
+    bool a_act = (mods & (MOD_LALT | MOD_RALT)) != 0;
+    if (a_act) {
+        mono_fill_rect(cbuf, 2, 109, 13, 15, COLOR_WHITE);
+        mono_draw_apple_opt(cbuf, 4, 114, COLOR_BLACK);
+    } else {
+        mono_draw_rect(cbuf, 2, 109, 13, 15, COLOR_WHITE);
+        mono_draw_apple_opt(cbuf, 4, 114, COLOR_WHITE);
+    }
+
+    // Box 4: Cmd [⌘] (X=17..29, Y=109..123)
+    bool g_act = (mods & (MOD_LGUI | MOD_RGUI)) != 0;
+    if (g_act) {
+        mono_fill_rect(cbuf, 17, 109, 13, 15, COLOR_WHITE);
+        mono_draw_apple_cmd(cbuf, 19, 112, COLOR_BLACK);
+    } else {
+        mono_draw_rect(cbuf, 17, 109, 13, 15, COLOR_WHITE);
+        mono_draw_apple_cmd(cbuf, 19, 112, COLOR_WHITE);
+    }
+
+    lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
+    if (canvas) {
+        lv_area_t area = { .x1 = 0, .y1 = 0, .x2 = 38, .y2 = 31 };
+        lv_obj_invalidate_area(canvas, &area);
+    }
+#else
     mono_fill_rect(cbuf, 0, 90, 32, 38, COLOR_BLACK);
 
     // Footer Divider (Y=90)
@@ -164,19 +303,16 @@ static void draw_footer_region(struct zmk_widget_screen_status *widget) {
     mono_draw_pixel(cbuf, 0, 127, COLOR_WHITE);
     mono_draw_pixel(cbuf, 31, 127, COLOR_WHITE);
 
-#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    // Central footer: reserved for future modifier indicator blocks
-#else
     // Peripheral footer: SPLIT (Y=96) + OK/-- (Y=109)
     mono_draw_string(cbuf, 4, 96, "SPLIT", COLOR_WHITE);
     mono_draw_string(cbuf, 11, 109, widget->state.connected ? "OK" : "--", COLOR_WHITE);
-#endif
 
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     if (canvas) {
         lv_area_t area = { .x1 = 0, .y1 = 0, .x2 = 37, .y2 = 31 };
         lv_obj_invalidate_area(canvas, &area);
     }
+#endif
 }
 
 static void draw_full_screen(struct zmk_widget_screen_status *widget) {
@@ -300,6 +436,37 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_status, struct layer_status_state,
 
 ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
+// -----------------------------------------------------------------------------
+// Modifier Status Listener (Central only)
+// -----------------------------------------------------------------------------
+static void set_mods_status(struct zmk_widget_screen_status *widget,
+                            struct mods_status_state state) {
+    if (widget->state.modifiers == state.mods) {
+        return;
+    }
+    widget->state.modifiers = state.mods;
+    draw_footer_region(widget);
+}
+
+static void mods_status_update_cb(struct mods_status_state state) {
+    struct zmk_widget_screen_status *widget;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        set_mods_status(widget, state);
+    }
+}
+
+static struct mods_status_state mods_status_get_state(const zmk_event_t *_eh) {
+    return (struct mods_status_state){
+        .mods = (uint8_t)zmk_hid_get_explicit_mods(),
+    };
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_mods_status, struct mods_status_state,
+                            mods_status_update_cb, mods_status_get_state);
+
+ZMK_SUBSCRIPTION(widget_mods_status, zmk_modifiers_state_changed);
+ZMK_SUBSCRIPTION(widget_mods_status, zmk_keycode_state_changed);
+
 #else // Peripheral split role
 static void set_peripheral_status(struct zmk_widget_screen_status *widget,
                                   struct peripheral_status_state state) {
@@ -350,6 +517,7 @@ int zmk_widget_screen_status_init(struct zmk_widget_screen_status *widget, lv_ob
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     widget_output_status_init();
     widget_layer_status_init();
+    widget_mods_status_init();
 #else
     widget_peripheral_status_init();
 #endif

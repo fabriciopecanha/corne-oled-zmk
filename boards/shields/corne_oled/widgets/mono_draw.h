@@ -36,5 +36,13 @@ void mono_fill_rect(lv_color_t *cbuf, int x, int y, int w, int h, lv_color_t col
 void mono_draw_char(lv_color_t *cbuf, int x, int y, char ch, lv_color_t color);
 void mono_draw_string(lv_color_t *cbuf, int x, int y, const char *str, lv_color_t color);
 void mono_draw_big_digit(lv_color_t *cbuf, int x, int y, int digit, lv_color_t color);
+void mono_draw_hero_digit(lv_color_t *cbuf, int x, int y, int digit, lv_color_t color);
 void mono_draw_battery(lv_color_t *cbuf, int x, int y, uint8_t level, bool charging);
+void mono_draw_battery_large(lv_color_t *cbuf, int x, int y, uint8_t level, bool charging);
+void mono_draw_bt_icon(lv_color_t *cbuf, int x, int y, lv_color_t color);
+void mono_draw_apple_shift(lv_color_t *cbuf, int x, int y, lv_color_t color);
+void mono_draw_apple_ctrl(lv_color_t *cbuf, int x, int y, lv_color_t color);
+void mono_draw_apple_opt(lv_color_t *cbuf, int x, int y, lv_color_t color);
+void mono_draw_apple_cmd(lv_color_t *cbuf, int x, int y, lv_color_t color);
 void mono_draw_bold_corne(lv_color_t *cbuf, int x, int y_start, lv_color_t color);
+

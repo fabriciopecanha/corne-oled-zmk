@@ -226,6 +226,178 @@ void mono_draw_battery(lv_color_t *cbuf, int x, int y, uint8_t level, bool charg
     }
 }
 
+// -----------------------------------------------------------------------------
+// Large Battery (w=12 + 1px nipple = 13px, h=8px)
+// -----------------------------------------------------------------------------
+void mono_draw_battery_large(lv_color_t *cbuf, int x, int y, uint8_t level, bool charging) {
+    mono_draw_rect(cbuf, x, y, 12, 8, COLOR_WHITE);
+    mono_draw_line_v(cbuf, x + 12, y + 2, y + 5, COLOR_WHITE); // nipple
+    if (charging) {
+        mono_draw_line_h(cbuf, x + 4, x + 8, y + 3, COLOR_WHITE);
+        mono_draw_line_v(cbuf, x + 6, y + 2, y + 5, COLOR_WHITE);
+    } else if (level > 0) {
+        int fill_w = (level * 8) / 100;
+        if (fill_w < 1) fill_w = 1;
+        if (fill_w > 8) fill_w = 8;
+        mono_fill_rect(cbuf, x + 2, y + 2, fill_w, 4, COLOR_WHITE);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Nordic BT Rune (6x10 px)
+// -----------------------------------------------------------------------------
+static const uint8_t bt_rune_rows[10] = {
+    0x20, // ..#...
+    0x30, // ..##..
+    0xA8, // #.#.#.
+    0x6C, // .##.##
+    0x38, // ..###.
+    0x30, // ..##..
+    0x78, // .####.
+    0xA4, // #.#..#
+    0x38, // ..###.
+    0x20, // ..#...
+};
+
+void mono_draw_bt_icon(lv_color_t *cbuf, int x, int y, lv_color_t color) {
+    for (int r = 0; r < 10; r++) {
+        uint8_t row = bt_rune_rows[r];
+        for (int c = 0; c < 6; c++) {
+            if ((row >> (7 - c)) & 1) {
+                mono_draw_pixel(cbuf, x + c, y + r, color);
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Hero Digit (20x34 px, thickness 4)
+// -----------------------------------------------------------------------------
+void mono_draw_hero_digit(lv_color_t *cbuf, int x, int y, int digit, lv_color_t color) {
+    const int w = 20;
+    const int h = 34;
+    const int t = 4;
+
+    if (digit == 0) {
+        mono_fill_rect(cbuf, x, y, w, h, color);
+        mono_fill_rect(cbuf, x + t, y + t, w - 2 * t, h - 2 * t, COLOR_BLACK);
+    } else if (digit == 1) {
+        mono_fill_rect(cbuf, x + w / 2 - 1, y, t, h, color);
+        mono_fill_rect(cbuf, x + w / 2 - 5, y, 5, t, color);
+        mono_fill_rect(cbuf, x + 3, y + h - t, w - 6, t, color);
+    } else if (digit == 2) {
+        mono_fill_rect(cbuf, x, y, w, t, color);
+        mono_fill_rect(cbuf, x + w - t, y, t, h / 2, color);
+        mono_fill_rect(cbuf, x, y + h / 2 - t / 2, w, t, color);
+        mono_fill_rect(cbuf, x, y + h / 2, t, h / 2, color);
+        mono_fill_rect(cbuf, x, y + h - t, w, t, color);
+    } else if (digit == 3) {
+        mono_fill_rect(cbuf, x, y, w, t, color);
+        mono_fill_rect(cbuf, x + w - t, y, t, h, color);
+        mono_fill_rect(cbuf, x, y + h / 2 - t / 2, w, t, color);
+        mono_fill_rect(cbuf, x, y + h - t, w, t, color);
+    } else if (digit == 4) {
+        mono_fill_rect(cbuf, x, y, t, h / 2, color);
+        mono_fill_rect(cbuf, x, y + h / 2 - t / 2, w, t, color);
+        mono_fill_rect(cbuf, x + w - t, y, t, h, color);
+    } else if (digit == 5) {
+        mono_fill_rect(cbuf, x, y, w, t, color);
+        mono_fill_rect(cbuf, x, y, t, h / 2, color);
+        mono_fill_rect(cbuf, x, y + h / 2 - t / 2, w, t, color);
+        mono_fill_rect(cbuf, x + w - t, y + h / 2, t, h / 2, color);
+        mono_fill_rect(cbuf, x, y + h - t, w, t, color);
+    } else {
+        mono_fill_rect(cbuf, x, y, w, h, color);
+        mono_fill_rect(cbuf, x + t, y + t, w - 2 * t, h - 2 * t, COLOR_BLACK);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Apple Modifier Glyphs
+// -----------------------------------------------------------------------------
+static const uint16_t shift_rows[8] = {
+    0b0000100000000000, // ....#....
+    0b0001110000000000, // ...###...
+    0b0011111000000000, // ..#####..
+    0b0111111100000000, // .#######.
+    0b1111111110000000, // #########
+    0b0001110000000000, // ...###...
+    0b0001110000000000, // ...###...
+    0b0001110000000000, // ...###...
+};
+
+void mono_draw_apple_shift(lv_color_t *cbuf, int x, int y, lv_color_t color) {
+    for (int r = 0; r < 8; r++) {
+        uint16_t row = shift_rows[r];
+        for (int c = 0; c < 9; c++) {
+            if ((row >> (15 - c)) & 1) {
+                mono_draw_pixel(cbuf, x + c, y + r, color);
+            }
+        }
+    }
+}
+
+static const uint16_t ctrl_rows[5] = {
+    0b0000100000000000, // ....#....
+    0b0001110000000000, // ...###...
+    0b0011011000000000, // ..##.##..
+    0b0110001100000000, // .##...##.
+    0b1100000110000000, // ##.....##
+};
+
+void mono_draw_apple_ctrl(lv_color_t *cbuf, int x, int y, lv_color_t color) {
+    for (int r = 0; r < 5; r++) {
+        uint16_t row = ctrl_rows[r];
+        for (int c = 0; c < 9; c++) {
+            if ((row >> (15 - c)) & 1) {
+                mono_draw_pixel(cbuf, x + c, y + r, color);
+            }
+        }
+    }
+}
+
+static const uint16_t opt_rows[5] = {
+    0b1110001110000000, // ###...###
+    0b0001000000000000, // ...#.....
+    0b0000100000000000, // ....#....
+    0b0000010000000000, // .....#...
+    0b0000001110000000, // ......###
+};
+
+void mono_draw_apple_opt(lv_color_t *cbuf, int x, int y, lv_color_t color) {
+    for (int r = 0; r < 5; r++) {
+        uint16_t row = opt_rows[r];
+        for (int c = 0; c < 9; c++) {
+            if ((row >> (15 - c)) & 1) {
+                mono_draw_pixel(cbuf, x + c, y + r, color);
+            }
+        }
+    }
+}
+
+static const uint16_t cmd_rows[9] = {
+    0b1110001110000000, // ###...###
+    0b1010001010000000, // #.#...#.#
+    0b1111111110000000, // #########
+    0b0010001000000000, // ..#...#..
+    0b0010001000000000, // ..#...#..
+    0b0010001000000000, // ..#...#..
+    0b1111111110000000, // #########
+    0b1010001010000000, // #.#...#.#
+    0b1110001110000000, // ###...###
+};
+
+void mono_draw_apple_cmd(lv_color_t *cbuf, int x, int y, lv_color_t color) {
+    for (int r = 0; r < 9; r++) {
+        uint16_t row = cmd_rows[r];
+        for (int c = 0; c < 9; c++) {
+            if ((row >> (15 - c)) & 1) {
+                mono_draw_pixel(cbuf, x + c, y + r, color);
+            }
+        }
+    }
+}
+
 void mono_draw_bold_corne(lv_color_t *cbuf, int x, int y_start, lv_color_t color) {
     // Letter C (x .. x+8, y .. y+9)
     int y = y_start;
