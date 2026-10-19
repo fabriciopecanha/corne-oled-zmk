@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Fabricio Pecanha
+# SPDX-License-Identifier: MIT
+
+if SHIELD_CORNE_OLED
+
+choice ZMK_DISPLAY_STATUS_SCREEN
+    default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+endchoice
+
+choice ZMK_DISPLAY_WORK_QUEUE
+    default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
+endchoice
+
+config ZMK_DISPLAY_DEDICATED_THREAD_STACK_SIZE
+    default 2048
+
+config ZMK_DISPLAY_DEDICATED_THREAD_PRIORITY
+    default 5
+
+config LV_Z_BITS_PER_PIXEL
+    default 1
+
+choice LV_COLOR_DEPTH
+    default LV_COLOR_DEPTH_1
+endchoice
+
+endif

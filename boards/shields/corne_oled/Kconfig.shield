@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Fabricio Pecanha
+# SPDX-License-Identifier: MIT
+
+config SHIELD_CORNE_OLED
+    def_bool $(shields_list_contains,corne_oled)

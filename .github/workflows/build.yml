@@ -6,6 +6,7 @@ on:
       - master
       - sofle_hybrid_rgb_rev5
       - factory-studio-unlocked
+      - test-c-direct-mono-oled
   workflow_dispatch:
 
 permissions:
