@@ -152,3 +152,19 @@
                 };
         };
 };
+
+/ {
+        combos {
+                compatible = "zmk,combos";
+
+                // Six-column Corne: outer third-row keys, indexed from zero.
+                // Studio currently maps position 24 to LSHFT and 35 to RSHFT.
+                // Keep the compiled keymap bindings intact to preserve Studio settings.
+                combo_shift_caps {
+                        timeout-ms = <50>;
+                        key-positions = <24 35>;
+                        bindings = <&kp CAPS>;
+                        layers = <0>;
+                };
+        };
+};
