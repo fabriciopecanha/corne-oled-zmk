@@ -7,6 +7,7 @@ on:
       - sofle_hybrid_rgb_rev5
       - factory-studio-unlocked
       - test-c-direct-mono-oled
+      - feat-corne-mouse-studio
   workflow_dispatch:
 
 permissions:
