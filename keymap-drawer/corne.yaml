@@ -131,3 +131,7 @@ layers:
   - RET
   - {type: held}
   - RALT
+combos:
+- p: [24, 35]
+  k: CAPS
+  l: [default]
