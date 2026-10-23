@@ -1,10 +1,266 @@
 layout: {zmk_keyboard: corne}
 layers:
-  default: [TAB, Q, W, E, R, T, Y, U, I, O, P, BSPC, LCTRL, A, S, D, F, G, H, J, K, L, ;, '''', LSHFT, Z, X, C, V, B, N, M, ',', ., /, ESC, LGUI, lower, SPACE, RET,
-    raise, RALT]
-  lower:
+  BASE:
+  - {t: TAB, h: NUM_FN}
+  - Q
+  - W
+  - E
+  - R
+  - T
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - BSPC
+  - LCTRL
+  - {t: A, h: LSHFT}
+  - {t: S, h: LCTRL}
+  - {t: D, h: LALT}
+  - {t: F, h: LGUI}
+  - G
+  - H
+  - {t: J, h: RGUI}
+  - {t: K, h: RALT}
+  - {t: L, h: RCTRL}
+  - {t: ;, h: RSHFT}
+  - ''''
+  - LSHFT
+  - Z
+  - X
+  - C
+  - V
+  - B
+  - N
+  - M
+  - ','
+  - .
+  - /
+  - RSHFT
+  - LGUI
+  - {t: ESC, h: NAV}
+  - SPACE
+  - RET
+  - {t: BSPC, h: SYM}
+  - RALT
+  SYM:
+  - ESC
+  - '!'
+  - '@'
+  - '#'
+  - $
+  - '%'
+  - ^
+  - '&'
+  - '*'
+  - \
+  - '~'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '{'
+  - '}'
+  - (
+  - )
+  - '|'
+  - _
+  - +
+  - ':'
+  - '"'
+  - ''''
+  - '`'
+  - {t: ▽, type: trans}
+  - '['
+  - ']'
+  - <
+  - '>'
+  - '='
+  - '?'
+  - /
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '-'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {type: held}
+  - {t: ▽, type: trans}
+  NAV:
+  - ESC
+  - '&mkp MB4'
+  - '&msc_up'
+  - '&mmv_up'
+  - '&msc_down'
+  - {t: NUMPAD, h: toggle}
+  - HOME
+  - '&msc_left'
+  - UP
+  - '&msc_right'
+  - END
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '&mkp MB5'
+  - '&mmv_left'
+  - '&mmv_down'
+  - '&mmv_right'
+  - '&mkp_lclk'
+  - PG UP
+  - LEFT
+  - DOWN
+  - RIGHT
+  - DEL
+  - PG DN
+  - {t: ▽, type: trans}
+  - Ctl+LEFT
+  - Ctl+RIGHT
+  - INS
+  - '&mkp_mclk'
+  - '&mkp_rclk'
+  - Alt+LEFT
+  - Alt+RIGHT
+  - Gui+UP
+  - Gui+DOWN
+  - Gui+Z
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {type: held}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  NUMPAD:
+  - TAB
+  - PG UP
+  - HOME
+  - UP
+  - END
+  - Sft+TAB
+  - KP DIVIDE
+  - KP 7
+  - KP 8
+  - KP 9
+  - KP MULTIPLY
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - PG DN
+  - LEFT
+  - DOWN
+  - RIGHT
+  - DEL
+  - KP MINUS
+  - KP 4
+  - KP 5
+  - KP 6
+  - KP PLUS
+  - ','
+  - {t: ▽, type: trans}
+  - Gui+Z
+  - Gui+X
+  - Gui+C
+  - Gui+V
+  - '='
+  - KP 0
+  - KP 1
+  - KP 2
+  - KP 3
+  - .
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: BASE, h: toggle}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - BSPC
+  - {t: ▽, type: trans}
+  SYSTEM:
+  - ESC
+  - {h: '&sys_reset'}
+  - {h: '&bootloader'}
+  - OUT USB
+  - OUT BLE
+  - CAPS
+  - {h: '&sys_reset'}
+  - VOL DN
+  - MUTE
+  - VOL UP
+  - {h: '&bootloader'}
+  - {t: BASE, h: toggle}
+  - ''
+  - {t: BT, h: '0'}
+  - {t: BT, h: '1'}
+  - {t: BT, h: '2'}
+  - {t: BT, h: '3'}
+  - {t: BT, h: '4'}
+  - ''
+  - PREV
+  - PLAY PAUSE
+  - NEXT
+  - ''
+  - ''
+  - ''
   - '&studio_unlock'
-  - '&studio_unlock'
+  - {t: NUMPAD, h: toggle}
+  - Gui+Sft+3
+  - Gui+Sft+4
+  - {t: LIVE, h: toggle}
+  - ''
+  - BRI DN
+  - BRI UP
+  - ''
+  - ''
+  - Ctl+Gui+Q
+  - ''
+  - {type: held}
+  - ''
+  - ''
+  - {type: held}
+  - ''
+  LIVE:
+  - {t: TAB, h: NUM_FN}
+  - Q
+  - W
+  - Gui+E
+  - '&live_rename'
+  - Gui+T
+  - Gui+Z
+  - Gui+U
+  - UP
+  - O
+  - Gui+Sft+Z
+  - {t: ▽, type: trans}
+  - ESC
+  - A
+  - S
+  - Gui+D
+  - Gui+Sft+T
+  - Gui+G
+  - H
+  - LEFT
+  - DOWN
+  - RIGHT
+  - DEL
+  - Sft+SPACE
+  - {t: ▽, type: trans}
+  - Z
+  - X
+  - C
+  - '0'
+  - B
+  - Gui+J
+  - Gui+M
+  - Gui+L
+  - Gui+K
+  - Gui+Sft+M
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: BASE, h: toggle}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - BSPC
+  - {t: ▽, type: trans}
+  NUM_FN:
+  - {type: held}
+  - '1'
   - '2'
   - '3'
   - '4'
@@ -14,120 +270,41 @@ layers:
   - '8'
   - '9'
   - '0'
-  - BSPC
-  - BT CLR
-  - {t: BT, h: '0'}
-  - {t: BT, h: '1'}
-  - {t: BT, h: '2'}
-  - {t: BT, h: '3'}
-  - {t: BT, h: '4'}
-  - LEFT
-  - DOWN
-  - UP
-  - RIGHT
   - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - '&studio_unlock'
-  - '&studio_unlock'
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - LGUI
-  - {type: held}
-  - SPACE
-  - RET
-  - {t: ▽, type: trans}
-  - RALT
-  raise:
-  - TAB
-  - '!'
-  - '@'
-  - '#'
-  - $
-  - '%'
-  - ^
-  - '&'
-  - '*'
-  - (
-  - )
-  - BSPC
   - LCTRL
+  - F1
+  - F2
+  - F3
+  - F4
+  - F5
+  - F6
+  - F7
+  - F8
+  - F9
+  - F10
+  - F11
+  - {t: ▽, type: trans}
+  - Alt+Gui+B
+  - Alt+Gui+L
+  - Alt+Gui+M
+  - F9
+  - Gui+Sft+F9
+  - {t: NUMPAD, h: toggle}
+  - Gui+4
+  - Gui+5
+  - KP NUM
+  - F12
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - '-'
-  - '='
-  - '['
-  - ']'
-  - \
-  - '`'
-  - LSHFT
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
-  - _
-  - +
-  - '{'
-  - '}'
-  - '|'
-  - '~'
-  - LGUI
-  - {t: ▽, type: trans}
-  - SPACE
-  - RET
-  - {type: held}
-  - RALT
-  SYSTEM:
-  - TAB
-  - ''
-  - '&msc_up'
-  - ''
-  - ''
-  - ''
-  - ''
-  - ''
-  - '&mmv_up'
-  - ''
-  - ''
-  - BSPC
-  - LCTRL
-  - ''
-  - '&msc_left'
-  - '&msc_down'
-  - '&msc_right'
-  - ''
-  - ''
-  - '&mmv_left'
-  - '&mmv_down'
-  - '&mmv_right'
-  - ''
-  - ''
-  - LSHFT
-  - ''
-  - '&mkp_lclk'
-  - '&mkp_mclk'
-  - '&mkp_rclk'
-  - ''
-  - ''
-  - '&mkp_lclk'
-  - '&mkp_mclk'
-  - '&mkp_rclk'
-  - ''
-  - ''
-  - LGUI
-  - {type: held}
-  - SPACE
-  - RET
-  - {type: held}
-  - RALT
+combos:
+- p: [24, 35]
+  k: CAPS
+  l: [BASE]
+- p: [27, 32]
+  k: Alt+C
+  l: [BASE]
