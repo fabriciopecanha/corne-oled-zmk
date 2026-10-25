@@ -1,7 +1,7 @@
 layout: {zmk_keyboard: corne}
 layers:
   BASE:
-  - {t: TAB, h: NUM_FN}
+  - TAB
   - Q
   - W
   - E
@@ -38,8 +38,8 @@ layers:
   - /
   - RSHFT
   - LGUI
-  - {t: ESC, h: NAV}
-  - SPACE
+  - {t: SPACE, h: NAV}
+  - {t: ESC, h: NUM_FN}
   - RET
   - {t: BSPC, h: SYM}
   - RALT
@@ -216,7 +216,7 @@ layers:
   - {type: held}
   - ''
   LIVE:
-  - {t: TAB, h: NUM_FN}
+  - TAB
   - Q
   - W
   - Gui+E
@@ -259,7 +259,7 @@ layers:
   - BSPC
   - {t: ▽, type: trans}
   NUM_FN:
-  - {type: held}
+  - {t: ▽, type: trans}
   - '1'
   - '2'
   - '3'
@@ -297,7 +297,7 @@ layers:
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
-  - {t: ▽, type: trans}
+  - {type: held}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
   - {t: ▽, type: trans}
