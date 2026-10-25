@@ -8,6 +8,7 @@ on:
       - factory-studio-unlocked
       - test-c-direct-mono-oled
       - feat-corne-mouse-studio
+      - feat-corne-space-nav-v03-20261024
   workflow_dispatch:
 
 permissions:
