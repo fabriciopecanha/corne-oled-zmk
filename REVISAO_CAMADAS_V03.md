@@ -7,11 +7,12 @@ Base de comparação: candidato v02 compilado no commit `622cdf0fc1bcc47c66a6d6c
 ## Decisão para o polegar esquerdo
 
 - Tecla de camada: toque envia **Espaço**; segurar ativa **NAV**.
-- Tecla grande adjacente, antes Espaço: passa a ser **Esc dedicado**.
-- `Tab/FN` permanece como está. Usar “segurar Tab = Esc” atrasaria o Esc e eliminaria o acesso direto à camada `NUM_FN`.
+- Tecla grande adjacente, antes Espaço: toque envia **Esc**; segurar ativa **NUM_FN**.
+- `Tab/FN` passa a ser **Tab puro**, eliminando a dupla função do mindinho e liberando os quatro dedos da mão esquerda durante o uso de números e F-keys.
 - `quick-tap-ms = 175` foi adicionado ao Espaço/NAV para permitir dois espaços rápidos e repetição de Espaço, igual à lógica já usada no Backspace/SYM.
+- Esc/NUM_FN mantém `quick-tap-ms = 175`; toques repetidos continuam produzindo Esc, enquanto um pressionamento deliberadamente sustentado abre L6.
 
-Essa é a única mudança funcional da v03. O restante foi preservado para que o teste físico isole claramente o resultado.
+Além da correção Espaço/NAV, a v03 realoca o acesso existente à `NUM_FN` do Tab para o polegar Esc/FN. Nenhuma camada nova foi criada.
 
 ## Como ler o mapa
 
@@ -23,10 +24,10 @@ Essa é a única mudança funcional da v03. O restante foi preservado para que o
 
 | Fileira | Mão esquerda | Mão direita |
 |---|---|---|
-| Superior | Tab/FN · Q · W · E · R · T | Y · U · I · O · P · Backspace |
+| Superior | Tab · Q · W · E · R · T | Y · U · I · O · P · Backspace |
 | Central | Ctrl · A/Shift · S/Ctrl · D/Alt · F/GUI · G | H · J/GUI · K/Alt · L/Ctrl · ;/Shift · ' |
 | Inferior | Shift · Z · X · C · V · B | N · M · , · . · / · Shift |
-| Polegares | GUI · **Espaço/NAV** · **Esc** | Enter · Backspace/SYM · Alt direito |
+| Polegares | GUI · **Espaço/NAV** · **Esc/NUM_FN** | Enter · Backspace/SYM · Alt direito |
 
 Avaliação: completa e coerente. Backspace aparece também no canto superior direito, mas a duplicação é útil durante a adaptação. Os modificadores da fileira central continuam dependendo de teste de digitação rápida.
 
@@ -93,14 +94,14 @@ Avaliação: internamente consistente, mas precisa ser testada dentro da versão
 | Central | Ctrl e F1–F11 |
 | Inferior | atalhos macOS/Ableton · F9 · GUI+Shift+F9 · entrada em NUMPAD · GUI+4/5 · Num Lock · F12 |
 
-Avaliação: números e F1–F12 estão completos. O nome `NUM_FN` continua adequado, embora a fileira inferior também carregue atalhos de aplicativo. O acesso por segurar Tab foi preservado.
+Avaliação: números e F1–F12 estão completos. O nome `NUM_FN` continua adequado, embora a fileira inferior também carregue atalhos de aplicativo. O acesso passa a ser feito segurando Esc/NUM_FN com o polegar esquerdo, deixando os demais dedos livres.
 
 ## Pontos que exigem teste físico
 
 1. Toque rápido no Espaço/NAV deve gerar somente Espaço; segurar e usar IJKL deve entrar em NAV sem inserir Espaço.
 2. Dois toques rápidos e toque+segurar no Espaço devem repetir Espaço de modo natural.
-3. Esc dedicado deve fechar menus somente quando a tecla grande for pressionada.
-4. Backspace/SYM, Enter e Tab/FN devem permanecer iguais à v02.
+3. Toque rápido em Esc/NUM_FN deve enviar somente Esc; segurá-lo e usar números/F-keys deve ativar L6 sem enviar Esc.
+4. Backspace/SYM e Enter devem permanecer iguais à v02; Tab deve funcionar como tecla simples, inclusive em Shift+Tab e troca de janelas.
 5. NAV+SYM deve abrir SYSTEM e sair ao soltar uma delas.
 6. Entrada e saída de NUMPAD e LIVE não podem deixar a camada presa.
 7. Home-row mods, combo de Caps Lock, combo de cedilha e mouse precisam de teste real.
@@ -110,5 +111,5 @@ Avaliação: números e F1–F12 estão completos. O nome `NUM_FN` continua adeq
 
 - 7 camadas.
 - 42 posições em cada camada; 294/294 bindings presentes.
-- Nenhuma alteração fora do comportamento Espaço/NAV e da tecla Esc adjacente.
+- Mudanças limitadas a Espaço/NAV, Esc/NUM_FN e à conversão do antigo Tab/FN em Tab puro.
 - Compilação e gravação devem ser registradas separadamente; a revisão estática não substitui o teste no teclado.
