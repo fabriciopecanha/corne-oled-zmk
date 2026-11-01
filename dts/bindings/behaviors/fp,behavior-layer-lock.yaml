@@ -1,0 +1,3 @@
+description: Toggle the FP volatile lock of an already active MOUSE or NAV layer
+compatible: "fp,behavior-layer-lock"
+include: one_param.yaml
