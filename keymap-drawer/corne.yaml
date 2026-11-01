@@ -6,8 +6,8 @@ layers:
   - W
   - E
   - R
-  - T
-  - Y
+  - {t: T, h: '&bootloader'}
+  - {t: Y, h: '&bootloader'}
   - U
   - I
   - O
